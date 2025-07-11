@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package newpackage.v1;
+
+import "google/protobuf/timestamp.proto";
+import "newpackage/v1/types.proto";
+
+option go_package = "github.com/example/newpackage/v1";
+
+service NewService {
+  // GetItem retrieves an item by its ID.
+  rpc GetItem(GetItemRequest) returns (GetItemResponse);
+
+  // ListItems retrieves a list of items with pagination.
+  rpc ListItems(ListItemsRequest) returns (ListItemsResponse);
+}
+
+// GetItemRequest is the request message for GetItem.
+message GetItemRequest {
+  string id = 1;
+}
+
+message GetItemResponse {
+  Item item = 1;
+}
+
+message ListItemsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListItemsResponse {
+  repeated Item items = 1;
+  string next_page_token = 2;
+}
+
+message Item {
+  string id = 1;
+  string name = 2;
+  Status status = 3; // imported from types.proto
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}

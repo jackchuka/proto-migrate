@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package newpackage.extension;
+
+message ExtensionMessage {
+  string name = 1;
+}

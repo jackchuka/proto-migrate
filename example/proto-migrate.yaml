@@ -1,0 +1,27 @@
+source: example/oldpackage
+target: example/newpackage
+
+excludes:
+  - "*ignore*.proto"
+  - "vendor/**/*.proto"
+
+rules:
+  - kind: package
+    from: oldpackage.v1
+    to: newpackage.v1
+
+  - kind: option
+    from: oldpackage
+    to: newpackage
+
+  - kind: package
+    from: oldpackage.extension
+    to: newpackage.extension
+
+  - kind: service
+    from: OldService
+    to: NewService
+
+  - kind: regexp
+    pattern: "oldpackage\\.v1\\."
+    replace: "newpackage.v1."

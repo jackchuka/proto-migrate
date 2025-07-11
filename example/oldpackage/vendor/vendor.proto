@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package oldpackage.vendor;
+
+message VendorMessage {
+  string name = 1;
+}

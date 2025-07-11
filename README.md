@@ -1,144 +1,217 @@
 # Proto-Migrate
 
-_A declarative toolkit for refactoring and migrating Protocol Buffers._
+Protocol Buffer migrations done right - AST-aware, safe, and blazing fast
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jackchuka/proto-migrate.svg)](https://pkg.go.dev/github.com/jackchuka/proto-migrate)
-[![CI](https://github.com/jackchuka/proto-migrate/actions/workflows/ci.yml/badge.svg)](https://github.com/jackchuka/proto-migrate/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jackchuka/proto-migrate)](https://goreportcard.com/report/github.com/jackchuka/proto-migrate)
+[![CI](https://github.com/jackchuka/proto-migrate/actions/workflows/test.yml/badge.svg)](https://github.com/jackchuka/proto-migrate/actions/workflows/test.yml)
 
-proto-migrate rewrites package names, imports, service names, language-specific
-options, and more—then validates that the resulting graph **still compiles and
-is backward-compatible**.
+Proto-Migrate provides automated, AST-aware transformations for Protocol Buffer schemas. It rewrites package names, imports, service names, and language-specific options while ensuring the resulting protobuf graph remains valid and backward-compatible.
 
----
+## Why Proto-Migrate?
+
+When evolving Protocol Buffer schemas across large codebases:
+
+- **Package reorganization** becomes error-prone with manual find-and-replace
+- **Import paths** need updating across hundreds of files
+- **Language-specific options** (go_package, java_package) require consistent updates
+- **Service renames** must maintain backward compatibility
+- **Validation** is crucial to ensure changes don't break compilation
+
+Proto-Migrate automates these transformations safely and reliably.
 
 ## Features
 
-- **AST-level rewrites** – no fragile regex munging.
-- **Import resolver** – adjusts `import` paths, `go_package`, `java_package`,
-  `swift_prefix`, … and can optionally vendor third-party protos.
-- **Plan / Diff / Apply / Validate** sub-commands modelled after `terraform`.
-- **Buf & `protoc` hooks** – lint and breaking-change checks run automatically.
-- **Plugin architecture** – register your own `Rule` without forking.
-- **CI-friendly** – JSON logs, deterministic output, atomic writes.
+- 🔧 **AST-based transformations** - Precise modifications without regex fragility
+- 📦 **Smart import resolution** - Updates import paths and language-specific options
+- 🎯 **Multiple rule types** - Package renames, service renames, custom regex patterns
+- ⚡ **Terraform-like workflow** - Plan → Diff → Apply with dry-run capabilities
+- 🔍 **Built-in validation** - Ensures changes maintain compilation and compatibility
+- 🚀 **Performance optimized** - Concurrent processing with configurable parallelism
+- 🤖 **CI/CD ready** - JSON output, exit codes, and GitHub Actions support
 
----
+## Installation
+
+### From Source
+
+```bash
+# Requires Go 1.22+
+go install github.com/jackchuka/proto-migrate/cmd/proto-migrate@latest
+```
+
+### Pre-built Binaries
+
+Download from [GitHub Releases](https://github.com/jackchuka/proto-migrate/releases).
+
+### Verify Installation
+
+```bash
+proto-migrate --version
+```
 
 ## Quick Start
 
-```console
-# Install (Go 1.22+)
-go install github.com/jackchuka/proto-migrate/cmd/proto-migrate@latest
+```bash
+# 1. Initialize a migration config
+proto-migrate init > .proto-migrate.yaml
 
-# Scaffold a migration plan
-proto-migrate init > .proto-sync.yaml
+# 2. Edit .proto-migrate.yaml with your rules
 
-# Dry run – see what will change
+# 3. Preview changes (dry-run)
 proto-migrate plan
 
-# View a colorised unified diff
+# 4. View detailed diff
 proto-migrate diff
 
-# Apply the changes and ensure everything still compiles
-proto-migrate apply --update-options --vendor-deps
+# 5. Apply transformations
+proto-migrate apply
 ```
 
----
+## Configuration
 
-## Configuration file
+Create a `.proto-migrate.yaml` file:
 
 ```yaml
-# .proto-sync.yaml
+# Define source and target directories
 source: proto/oldpackage/v1
 target: proto/newpackage/v1
 
+# Exclude patterns (glob syntax)
 excludes:
-  - "*ignore*.proto"
-  - "*private*.proto"
+  - "*_test.proto"
+  - "**/internal/**"
+  - "vendor/**"
 
+# Transformation rules
 rules:
+  # Package rename
   - kind: package
     from: oldpackage.v1
     to: newpackage.v1
 
+  # Service rename
   - kind: service
     from: OldService
     to: NewService
 
+  # Option updates (go_package, java_package, etc.)
+  - kind: option
+    from: oldpackage
+    to: newpackage
+
+  # Custom regex transformations
   - kind: regexp
     pattern: "oldpackage\\.v1\\."
     replace: "newpackage.v1."
 ```
 
----
+### Rule Types
 
-## CLI commands
+| Rule Kind | Description                 | Example                              |
+| --------- | --------------------------- | ------------------------------------ |
+| `package` | Renames protobuf packages   | `oldpkg.v1` → `newpkg.v1`            |
+| `service` | Renames service definitions | `OldSvc` → `NewSvc`                  |
+| `option`  | Updates file options        | Updates `go_package`, `java_package` |
+| `regexp`  | Custom pattern matching     | Any regex pattern                    |
 
-| Command    | Description                                                |
-| ---------- | ---------------------------------------------------------- |
-| `plan`     | Loads plan, prints summary (no writes).                    |
-| `diff`     | Shows a unified diff of all pending rewrites.              |
-| `apply`    | Executes the plan, rewrites files atomically.              |
-| `validate` | Compiles with `protoc` and `buf lint/breaking`.            |
-| `watch`    | Watches source directory and re-runs `plan` incrementally. |
+## Commands
 
-Common flags:
+### Core Commands
 
-```
---config           Path to .proto-sync.yaml   (default: auto-detect)
---proto_path       Extra -I paths for protoc
---vendor-deps      Copy missing externals to vendor/
---update-options   Rewrite go/java/swift options that embed old paths
---log-json         Machine-readable output
---concurrency N    Parallel file visits        (default: #CPU)
-```
+| Command | Description                             |
+| ------- | --------------------------------------- |
+| `init`  | Generate a starter configuration file   |
+| `plan`  | Preview changes without modifying files |
+| `diff`  | Show unified diff of pending changes    |
+| `apply` | Execute transformations and write files |
 
----
+### Command Examples
 
-## CI integration
+```bash
+# Initialize configuration
+proto-migrate init > .proto-migrate.yaml
 
-Add `.github/workflows/proto-migrate.yml`:
+# Preview changes
+proto-migrate plan --config=.proto-migrate.yaml
 
-```yaml
-name: proto-migrate
+# Show colorized diff
+proto-migrate diff --color
 
-on: [pull_request]
+# Apply
+proto-migrate apply
 
-jobs:
-  migrate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: "1.22" }
-      - run: go install github.com/jackchuka/proto-migrate/cmd/proto-migrate@latest
-      - run: proto-migrate diff --exit-code # fails build if diffs exist
+# Apply with external dependency vendoring
+proto-migrate apply --vendor-deps
 ```
 
----
+### Global Flags
 
-## Comparison
+| Flag            | Description                     | Default     |
+| --------------- | ------------------------------- | ----------- |
+| `--config`      | Path to configuration file      | Auto-detect |
+| `--concurrency` | Number of parallel workers      | CPU count   |
+| `--vendor-deps` | Copy external protos to vendor/ | `false`     |
 
-|                    | sed/awk | Buf `breaking` | **proto-migrate** |
-| ------------------ | ------- | -------------- | ----------------- |
-| AST-aware          | ✗       | ✓ (read-only)  | **✓**             |
-| Automated rewrites | ✗       | ✗              | **✓**             |
-| Import resolution  | ✗       | ✗              | **✓**             |
-| Custom rules       | Manual  | ✗              | **✓**             |
-| Compile validation | Manual  | ✗              | **✓**             |
-| Vendor externals   | ✗       | ✗              | **✓**             |
+## Advanced Usage
 
----
+### Working with Multiple Configs
 
-## Contributing
+```bash
+# Process multiple migration configs
+for config in migrations/*.yaml; do
+  proto-migrate apply --config="$config"
+done
+```
 
-1. Fork and create a feature branch.
-2. Run `make test vet lint`.
-3. Submit a PR with a concise title and description.
-4. Ensure CI is green.
+### Programmatic Usage
 
----
+```go
+package main
 
-## License
+import (
+    "github.com/jackchuka/proto-migrate/pkg/protomigrate"
+)
 
-Apache-2.0 © jackchuka
+func main() {
+    err := protomigrate.Run(protomigrate.Config{
+        ConfigPath: ".proto-migrate.yaml",
+        VendorDeps: true,
+    })
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+## Comparison with Alternatives
+
+| Feature                      | sed/awk | Buf CLI        | **Proto-Migrate** |
+| ---------------------------- | ------- | -------------- | ----------------- |
+| AST-aware transformations    | ❌      | ✅ (read-only) | ✅                |
+| Automated rewrites           | ❌      | ❌             | ✅                |
+| Import path resolution       | ❌      | ❌             | ✅                |
+| Custom transformation rules  | Manual  | ❌             | ✅                |
+| Compilation validation       | Manual  | ✅             | ✅                |
+| Vendor external dependencies | ❌      | ❌             | ✅                |
+| Dry-run capability           | ❌      | ❌             | ✅                |
+| Batch operations             | Limited | ❌             | ✅                |
+
+### Development
+
+```bash
+# Clone the repository
+git clone https://github.com/jackchuka/proto-migrate
+cd proto-migrate
+
+# Install dependencies
+go mod download
+
+# Run tests
+make test
+
+# Run linters
+make lint
+
+# Build binary
+make build
+```
