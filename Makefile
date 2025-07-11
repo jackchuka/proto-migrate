@@ -4,13 +4,23 @@ GO := go
 BINARY := proto-migrate
 CMD_PATH := ./cmd/$(BINARY)
 
+# Version information
+VERSION ?= dev
+COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Build flags
+LDFLAGS := -X 'github.com/jackchuka/proto-migrate/internal/version.Version=$(VERSION)'
+LDFLAGS += -X 'github.com/jackchuka/proto-migrate/internal/version.Commit=$(COMMIT)'
+LDFLAGS += -X 'github.com/jackchuka/proto-migrate/internal/version.Date=$(DATE)'
+
 all: build
 
 build:
-	$(GO) build -o $(BINARY) $(CMD_PATH)
+	$(GO) build -ldflags "$(LDFLAGS)" -o $(BINARY) $(CMD_PATH)
 
 install:
-	$(GO) install $(CMD_PATH)
+	$(GO) install -ldflags "$(LDFLAGS)" $(CMD_PATH)
 
 test:
 	$(GO) test ./... -v -cover

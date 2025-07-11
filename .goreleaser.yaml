@@ -1,0 +1,33 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/proto-migrate
+    binary: proto-migrate
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/jackchuka/proto-migrate/internal/version.Version={{.Version}}
+      - -X github.com/jackchuka/proto-migrate/internal/version.Commit={{.Commit}}
+      - -X github.com/jackchuka/proto-migrate/internal/version.Date={{.Date}}
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^style:"
+      - "^refactor:"

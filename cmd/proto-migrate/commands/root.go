@@ -10,7 +10,7 @@ var globalFlags types.GlobalFlags
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "proto-migrate",
-		Short: "A declarative toolkit for refactoring and migrating Protocol Buffers",
+		Short: "Protocol Buffer migrations done right - AST-aware, safe, and blazing fast",
 		Long: `proto-migrate rewrites package names, imports, service names, language-specific
 options, and more—then validates that the resulting graph still compiles and
 is backward-compatible.`,
@@ -26,6 +26,7 @@ is backward-compatible.`,
 		newPlanCommand(),
 		newDiffCommand(),
 		newApplyCommand(),
+		newVersionCommand(),
 	)
 
 	return cmd

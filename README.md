@@ -46,7 +46,7 @@ Download from [GitHub Releases](https://github.com/jackchuka/proto-migrate/relea
 ### Verify Installation
 
 ```bash
-proto-migrate --version
+proto-migrate version
 ```
 
 ## Quick Start
