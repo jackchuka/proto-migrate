@@ -4,7 +4,7 @@ go 1.24.4
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
-	github.com/emicklei/proto v1.14.2
+	github.com/emicklei/proto v1.14.3
 	github.com/fatih/color v1.18.0
 	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
