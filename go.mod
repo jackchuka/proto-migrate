@@ -1,6 +1,6 @@
 module github.com/jackchuka/proto-migrate
 
-go 1.24.4
+go 1.26.1
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
