@@ -2,9 +2,10 @@
 
 Protocol Buffer migrations done right - AST-aware, safe, and blazing fast
 
+[![Test](https://github.com/jackchuka/proto-migrate/actions/workflows/test.yml/badge.svg)](https://github.com/jackchuka/proto-migrate/actions/workflows/test.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/jackchuka/proto-migrate.svg)](https://pkg.go.dev/github.com/jackchuka/proto-migrate)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jackchuka/proto-migrate)](https://goreportcard.com/report/github.com/jackchuka/proto-migrate)
-[![CI](https://github.com/jackchuka/proto-migrate/actions/workflows/test.yml/badge.svg)](https://github.com/jackchuka/proto-migrate/actions/workflows/test.yml)
+[![Release](https://img.shields.io/github/v/release/jackchuka/proto-migrate?sort=semver)](https://github.com/jackchuka/proto-migrate/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Proto-Migrate provides automated, AST-aware transformations for Protocol Buffer schemas. It rewrites package names, imports, service names, and language-specific options while ensuring the resulting protobuf graph remains valid and backward-compatible.
 
