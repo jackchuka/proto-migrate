@@ -3,7 +3,7 @@ module github.com/jackchuka/proto-migrate
 go 1.27.3
 
 require (
-	github.com/bmatcuk/doublestar/v4 v4.10.3
+	github.com/bmatcuk/doublestar/v4 v4.10.4
 	github.com/emicklei/proto v1.14.3
 	github.com/fatih/color v1.19.0
 	github.com/spf13/cobra v1.10.2
