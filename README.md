@@ -36,7 +36,7 @@ Proto-Migrate automates these transformations safely and reliably.
 ### From Source
 
 ```bash
-# Requires Go 1.22+
+# Requires Go 1.27+
 go install github.com/jackchuka/proto-migrate/cmd/proto-migrate@latest
 ```
 
